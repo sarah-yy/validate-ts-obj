@@ -2,8 +2,11 @@
   "name": "validate-ts-obj",
   "version": "0.1.0",
   "description": "Small utility library to validate objects",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
   "author": "Thong Yuan Yu Sarah <thong.yuan.yu.sarah@gmail.com>",
   "license": "MIT",
   "type": "module",
