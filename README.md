@@ -1,0 +1,1 @@
+# validate-ts-obj
