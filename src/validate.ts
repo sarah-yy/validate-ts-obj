@@ -82,6 +82,18 @@ export const validateBodyObj = (body: {
       return `Invalid ${validateItem.name} value, please enter a valid email`;
     }
 
+    if (
+      validateItem.type === ValueType.String
+      && hasObjItem(body, validateItem.name)
+      && (
+        body[validateItem.name] === null
+        || typeof body[validateItem.name] !== "string"
+      )
+    ) {
+      return `Invalid ${validateItem.name} value, please enter a string`;
+    }
+    
+
     // Check if this string has the correct min length
     // Throw error if this value's length < min length
     if (

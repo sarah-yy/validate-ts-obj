@@ -1,23 +1,23 @@
 import { ValidateFieldArr, ValidateObjStruct, ValueType, validateBodyObj } from '../src';
 
+const requiredEmailField: ValidateObjStruct = {
+  name: "email",
+  type: ValueType.Email,
+  required: true,
+};
+
+const optionalEmailField: ValidateObjStruct = {
+  name: "email",
+  type: ValueType.Email,
+};
+
+const multipleInvalidFields: ValidateFieldArr = [requiredEmailField, {
+  name: "altEmail",
+  type: ValueType.Email,
+  required: true,
+}];
+
 describe("Email tests", () => {
-  const requiredEmailField: ValidateObjStruct = {
-    name: "email",
-    type: ValueType.Email,
-    required: true,
-  };
-
-  const optionalEmailField: ValidateObjStruct = {
-    name: "email",
-    type: ValueType.Email,
-  };
-
-  const multipleInvalidFields: ValidateFieldArr = [requiredEmailField, {
-    name: "altEmail",
-    type: ValueType.Email,
-    required: true,
-  }];
-
   test("should return undefined for object with valid email field", () => {
     const body = { email: "abcdefg@email.com" };
     const result = validateBodyObj(body, [requiredEmailField]);
