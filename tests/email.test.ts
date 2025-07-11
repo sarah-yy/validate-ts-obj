@@ -48,10 +48,16 @@ describe("Email tests", () => {
     expect(result).toBe("Invalid email value, please enter a valid email");
   });
 
+  test("should return error if required value is invalid", () => {
+    const body = { email: 26 };
+    const result = validateBodyObj(body, [requiredEmailField]);
+    expect(result).toBe("Invalid email value, please enter a valid email");
+  });
+
   test("should return the 1st error if there are multiple email errors", () => {
     const body = {
-      email: "This is the person's age",
-      altEmail: "This is the person's birthYear",
+      email: "This is the person's email",
+      altEmail: "This is the person's alternate email",
     };
     const result = validateBodyObj(body, multipleInvalidFields);
     expect(result).toBe("Invalid email value, please enter a valid email");

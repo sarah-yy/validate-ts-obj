@@ -4,6 +4,7 @@ export enum ValueType {
   String = "string", // eslint-disable-line no-unused-vars
   Email = "email", // eslint-disable-line no-unused-vars
   Number = "number", // eslint-disable-line no-unused-vars
+  Boolean = "boolean", // eslint-disable-line no-unused-vars
 }
 
 export interface ValidateObjStruct {
@@ -69,6 +70,14 @@ export const validateBodyObj = (body: {
       // Throw error if value > maximum value
       if (validateItem.maxNum && strToNum > validateItem.maxNum) {
         return `${validateItem.name} value too big, please enter a number <= ${validateItem.maxNum}`;
+      }
+    }
+
+    // Check if value is a valid boolean
+    // Throw errror if this is not a valid boolean
+    if (validateItem.type === ValueType.Boolean && hasObjItem(body, validateItem.name)) {
+      if (typeof body[validateItem.name] !== "boolean") {
+        return `Invalid ${validateItem.name} value, please enter a boolean`;
       }
     }
 
