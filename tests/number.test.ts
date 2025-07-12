@@ -34,7 +34,7 @@ const multipleInvalidFields: ValidateFieldArr = [requiredNumField, {
 }];
 
 describe("Number tests", () => {
-  test("should return undefined for object with valid number field", () => {
+  test("should return undefined for object with valid number field", async () => {
     const body = { age: 30 };
     const result = validateBodyObj(body, [requiredNumField]);
     expect(result).toBeUndefined();
