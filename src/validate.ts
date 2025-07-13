@@ -4,6 +4,7 @@ export enum ValueType {
   String = "string", // eslint-disable-line no-unused-vars
   Email = "email", // eslint-disable-line no-unused-vars
   Number = "number", // eslint-disable-line no-unused-vars
+  Boolean = "boolean", // eslint-disable-line no-unused-vars
 }
 
 export interface ValidateObjStruct {
@@ -45,61 +46,67 @@ export const validateBodyObj = (body: {
     const validateItem = validateObj[ii];
 
     // Missing field check
-    if (validateItem.required && !hasObjItem(body, validateItem.name)) {
+    if (validateItem.required && (!hasObjItem(body, validateItem.name) || typeof body[validateItem.name] === "undefined")) {
       return `Missing ${validateItem.name} field. Please make sure to submit all required fields: ${requiredFieldsStr.join(", ")}`;
     }
 
-    // Number checks
-    if (validateItem.type === ValueType.Number && body[validateItem.name]) {
-      const strToNum = parseInt(body[validateItem.name]);
+    switch (validateItem.type) {
+      case ValueType.Number: {
+        if (hasObjItem(body, validateItem.name)) {
+          const strToNum = parseInt(body[validateItem.name]);
 
-      // Check if value is valid number
-      // Throw error if this is not a valid number
-      if (!isFinite(strToNum)) {
-        return `Invalid ${validateItem.name} value, please enter a number`;
+          // Check if value is valid number
+          // Throw error if this is not a valid number
+          if (!isFinite(strToNum)) {
+            return `Invalid ${validateItem.name} value, please enter a number`;
+          }
+
+          // Check if a value is more than or equal the minimum value
+          // Throw error if value < minimum value
+          if (validateItem.minNum && strToNum < validateItem.minNum) {
+            return `${validateItem.name} value too small, please enter a number >= ${validateItem.minNum}`;
+          }
+
+          // Check if a value is less than or equal the maximum value
+          // Throw error if value > maximum value
+          if (validateItem.maxNum && strToNum > validateItem.maxNum) {
+            return `${validateItem.name} value too big, please enter a number <= ${validateItem.maxNum}`;
+          }
+        }
+        continue;
       }
-
-      // Check if a value is more than or equal the minimum value
-      // Throw error if value < minimum value
-      if (validateItem.minNum && strToNum < validateItem.minNum) {
-        return `${validateItem.name} value too small, please enter a number >= ${validateItem.minNum}`;
+      case ValueType.Boolean: {
+        if (hasObjItem(body, validateItem.name) && typeof body[validateItem.name] !== "boolean") {
+          return `Invalid ${validateItem.name} value, please enter a boolean`;
+        }
+        continue;
       }
-
-      // Check if a value is less than or equal the maximum value
-      // Throw error if value > maximum value
-      if (validateItem.maxNum && strToNum > validateItem.maxNum) {
-        return `${validateItem.name} value too big, please enter a number <= ${validateItem.maxNum}`;
+      case ValueType.Email: {
+        if (hasObjItem(body, validateItem.name) && !emailRegex.test(body[validateItem.name])) {
+          return `Invalid ${validateItem.name} value, please enter a valid email`;
+        }
+        continue;
       }
-    }
+      case ValueType.String: {
+        if (hasObjItem(body, validateItem.name)) {
+          if (body[validateItem.name] === null || typeof body[validateItem.name] !== "string") {
+            return `Invalid ${validateItem.name} value, please enter a string`;
+          }
 
-    // Check if value is a valid email
-    // Throw error if this is not a valid email address
-    if (
-      validateItem.type === ValueType.Email
-      && body[validateItem.name]
-      && !emailRegex.test(body[validateItem.name])
-    ) {
-      return `Invalid ${validateItem.name} value, please enter a valid email`;
-    }
+          // Check if this string has the correct min length
+          // Throw error if this value's length < min length
+          if (validateItem.minLength && body[validateItem.name]?.length < validateItem.minLength) {
+            return `Invalid string length for ${validateItem.name} field. Please input a string with ${validateItem.minLength} or more characters`;
+          }
 
-    // Check if this string has the correct min length
-    // Throw error if this value's length < min length
-    if (
-      validateItem.minLength
-      && body[validateItem.name]
-      && body[validateItem.name].length < validateItem.minLength
-    ) {
-      return `Invalid string length for ${validateItem.name} field. Please input a string with ${validateItem.minLength} or more characters`;
-    }
-
-    // Check if this string has the correct max length
-    // Throw error if this value's length > max length
-    if (
-      validateItem.maxLength
-      && body[validateItem.name]
-      && body[validateItem.name].length > validateItem.maxLength
-    ) {
-      return `Invalid string length for ${validateItem.name} field. Please input a string with ${validateItem.maxLength} or fewer characters`;
+          // Check if this string has the correct max length
+          // Throw error if this value's length > max length
+          if (validateItem.maxLength && body[validateItem.name]?.length > validateItem.maxLength) {
+            return `Invalid string length for ${validateItem.name} field. Please input a string with ${validateItem.maxLength} or fewer characters`;
+          }
+        }
+        continue;
+      }
     }
   }
   return undefined;
