@@ -107,6 +107,9 @@ export const validateBodyObj = (body: {
         }
         continue;
       }
+      default: {
+        continue;
+      }
     }
   }
   return undefined;
