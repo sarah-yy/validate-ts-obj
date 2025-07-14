@@ -6,7 +6,7 @@
   "types": "./lib/index.d.ts",
   "repository": "https://github.com/sarah-yy/validate-ts-obj",
   "files": [
-    "lib/**/*"
+    "lib"
   ],
   "author": "Thong Yuan Yu Sarah <thong.yuan.yu.sarah@gmail.com>",
   "license": "MIT",
@@ -30,9 +30,5 @@
     "ts-jest": "^29.4.0",
     "tsc-alias": "^1.2.11",
     "typescript": "5.3.3"
-  },
-  "publishConfig": {
-    "cache": "~/.npm",
-    "registry": "https://registry.npmjs.org/"
   }
 }
