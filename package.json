@@ -1,9 +1,9 @@
 {
   "name": "validate-ts-obj",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Small utility library to validate objects",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "repository": "https://github.com/sarah-yy/validate-ts-obj",
   "files": [
     "lib/**/*"
