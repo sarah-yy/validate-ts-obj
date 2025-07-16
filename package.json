@@ -2,7 +2,7 @@
   "name": "validate-ts-obj",
   "version": "0.0.5-beta.3",
   "description": "Small utility library to validate objects",
-  "main": "lib/index.js",
+  "main": "lib/index.mjs",
   "types": "lib/index.d.ts",
   "repository": "https://github.com/sarah-yy/validate-ts-obj",
   "files": [
