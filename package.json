@@ -18,12 +18,15 @@
   },
   "packageManager": "yarn@4.1.1",
   "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.4",
     "@stylistic/eslint-plugin-ts": "^1.7.2",
     "@types/jest": "^30.0.0",
     "@typescript-eslint/parser": "^6.9.0",
     "eslint": "^8.42.0",
     "jest": "^30.0.4",
     "jest-util": "^30.0.2",
+    "rollup": "^4.45.0",
     "ts-jest": "^29.4.0",
     "tsc-alias": "^1.2.11",
     "typescript": "5.3.3"
