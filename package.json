@@ -1,8 +1,8 @@
 {
   "name": "validate-ts-obj",
-  "version": "0.0.4",
+  "version": "0.0.5-beta.4",
   "description": "Small utility library to validate objects",
-  "main": "lib/index.js",
+  "main": "lib/index.mjs",
   "types": "lib/index.d.ts",
   "repository": "https://github.com/sarah-yy/validate-ts-obj",
   "files": [
@@ -12,23 +12,24 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "rm -rf lib && yarn run lint && tsc && tsc-alias",
+    "build": "yarn run lint && rm -rf lib && rollup -c",
     "test": "jest",
     "lint": "yarn run eslint src/"
   },
   "packageManager": "yarn@4.1.1",
-  "dependencies": {
-    "ts-node": "^10.9.2"
-  },
   "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.4",
     "@stylistic/eslint-plugin-ts": "^1.7.2",
     "@types/jest": "^30.0.0",
     "@typescript-eslint/parser": "^6.9.0",
     "eslint": "^8.42.0",
     "jest": "^30.0.4",
     "jest-util": "^30.0.2",
+    "rollup": "^4.45.0",
     "ts-jest": "^29.4.0",
     "tsc-alias": "^1.2.11",
+    "tslib": "^2.8.1",
     "typescript": "5.3.3"
   }
 }

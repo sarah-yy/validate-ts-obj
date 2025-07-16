@@ -1,15 +1,22 @@
 const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/i;
 
-export enum ValueType {
-  String = "string", // eslint-disable-line no-unused-vars
-  Email = "email", // eslint-disable-line no-unused-vars
-  Number = "number", // eslint-disable-line no-unused-vars
-  Boolean = "boolean", // eslint-disable-line no-unused-vars
+export interface ValueTypeObj {
+  String: string;
+  Email: string;
+  Number: string;
+  Boolean: string;
 }
+
+export const ValueType: ValueTypeObj = {
+  String: "string", // eslint-disable-line no-unused-vars
+  Email: "email", // eslint-disable-line no-unused-vars
+  Number: "number", // eslint-disable-line no-unused-vars
+  Boolean: "boolean", // eslint-disable-line no-unused-vars
+};
 
 export interface ValidateObjStruct {
   name: string;
-  type: ValueType;
+  type: typeof ValueType[keyof typeof ValueType];
   required?: boolean;
   // For strings only
   minLength?: number;
