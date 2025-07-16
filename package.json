@@ -1,6 +1,6 @@
 {
   "name": "validate-ts-obj",
-  "version": "0.0.5-beta.3",
+  "version": "0.0.5-beta.4",
   "description": "Small utility library to validate objects",
   "main": "lib/index.mjs",
   "types": "lib/index.d.ts",
