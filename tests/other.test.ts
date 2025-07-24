@@ -18,6 +18,17 @@ describe("Other tests", () => {
     name: "isSubmitted",
     type: ValueType.Boolean,
     required: true,
+  }, {
+    name: "gender",
+    type: ValueType.String,
+    required: true,
+    acceptedValues: ["male", "female"],
+  }, {
+    name: "favouriteFruits",
+    type: ValueType.Array,
+    arrayType: {
+      type: ValueType.String,
+    },
   }];
 
   test("Return undefined for mixed valid object", () => {
@@ -26,6 +37,8 @@ describe("Other tests", () => {
       age: 28,
       email: "abcdefg@gmail.com",
       isSubmitted: true,
+      gender: "female",
+      favouriteFruits: ["apple", "orange", "banana"],
     };
     const result = validateBodyObj(body, validateObj);
     expect(result).toBeUndefined();
@@ -37,6 +50,7 @@ describe("Other tests", () => {
       age: 13,
       email: "abcdefg@gmail.com",
       isSubmitted: true,
+      gender: "female",
     };
     const result = validateBodyObj(body, validateObj);
     expect(result).toBe("age value too small, please enter a number >= 18");
@@ -48,8 +62,10 @@ describe("Other tests", () => {
       age: 13,
       email: "abdcd",
       isSubmitted: true,
+      gender: "prefer not to say",
+      favouriteFruits: ["apple", "orange", 24],
     };
     const result = validateBodyObj(body, validateObj);
-    expect(result).toBe("Missing name field. Please make sure to submit all required fields: name, email, isSubmitted");
+    expect(result).toBe("Missing name field. Please make sure to submit all required fields: name, email, isSubmitted, gender");
   });
 });

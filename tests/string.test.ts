@@ -37,6 +37,13 @@ const objFieldSchema: ValidateFieldArr = [{
   minLength: 2,
 }];
 
+const acceptedValuesSchema: ValidateObjStruct = {
+  name: "gender",
+  type: ValueType.String,
+  required: true,
+  acceptedValues: ["male", "female"],
+};
+
 describe("String tests", () => {
   test("should return undefined for object with valid string field", () => {
     const body = { name: "Black Widow" };
@@ -117,5 +124,17 @@ describe("String tests", () => {
     };
     const result = validateBodyObj(body, objFieldSchema);
     expect(result).toBe("Invalid string length for name field. Please input a string with 2 or more characters");
+  });
+
+  test("should return undefined if the value is included in the list of accepted values", () => {
+    const body = { gender: "female" };
+    const result = validateBodyObj(body, [acceptedValuesSchema]);
+    expect(result).toBeUndefined();
+  });
+
+  test("should return error if the value is not included in the list of accepted values", () => {
+    const body = { gender: "prefer not to say" };
+    const result = validateBodyObj(body, [acceptedValuesSchema]);
+    expect(result).toBe("Invalid gender value, please enter only the following values: male, female");
   });
 });
