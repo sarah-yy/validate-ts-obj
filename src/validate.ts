@@ -1,3 +1,5 @@
+import { getOrdinalNumber } from "./utils";
+
 const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/i;
 
 export interface ValueTypeObj {
@@ -5,33 +7,50 @@ export interface ValueTypeObj {
   Email: string;
   Number: string;
   Boolean: string;
+  Array: string;
 }
 
 export const ValueType: ValueTypeObj = {
-  String: "string", // eslint-disable-line no-unused-vars
-  Email: "email", // eslint-disable-line no-unused-vars
-  Number: "number", // eslint-disable-line no-unused-vars
-  Boolean: "boolean", // eslint-disable-line no-unused-vars
+  String: "string",
+  Email: "email",
+  Number: "number",
+  Boolean: "boolean",
+  Array: "array",
 };
+
+export type ValueTypeKey = typeof ValueType[keyof typeof ValueType];
 
 export interface ValidateObjStruct {
   name: string;
-  type: typeof ValueType[keyof typeof ValueType];
+  type: ValueTypeKey;
   required?: boolean;
-  // For strings only
+
+  // For strings and arrays only
   minLength?: number;
   maxLength?: number;
+
   // For numbers only
   minNum?: number;
   maxNum?: number;
+
+  // For arrays only
+  arrayType?: ValidateFieldArr | ArrayItemStruct;
 }
+
+export type ArrayItemStruct = Omit<ValidateObjStruct, "name">;
 
 export type ValidateFieldArr = ValidateObjStruct[];
 
-export const isObject = (obj: any): boolean => {
-  if (typeof obj !== "object") return false;
-  if (!!Array.isArray) return !Array.isArray(obj);
-  return Object.prototype.toString.call(obj) === "[object Array]";
+export const isArray = (item: any): boolean => {
+  if (typeof item !== "object") return false;
+  if (!!Array.isArray) return Array.isArray(item);
+  return Object.prototype.toString.call(item) === "[object Array]";
+};
+
+export const isObject = (item: any): boolean => {
+  if (typeof item !== "object") return false;
+  if (!!Array.isArray) return !Array.isArray(item);
+  return Object.prototype.toString.call(item) === "[object Object]";
 };
 
 export const hasObjItem = (obj: {
@@ -40,9 +59,11 @@ export const hasObjItem = (obj: {
   return obj.hasOwnProperty(key);
 };
 
-export const validateBodyObj = (body: {
+interface BodyObj {
   [key: string]: any;
-}, validateObj: ValidateFieldArr): string | undefined => {
+}
+
+export const validateBodyObj = (body: BodyObj, validateObj: ValidateFieldArr, parentField?: string): string | undefined => {
   const requiredFieldsStr = validateObj.reduce((prev: string[], validateItem: ValidateObjStruct) => {
     if (!validateItem.required) return prev;
     prev.push(validateItem.name);
@@ -52,71 +73,126 @@ export const validateBodyObj = (body: {
   for (let ii = 0; ii < validateObj.length; ii++) {
     const validateItem = validateObj[ii];
 
-    // Missing field check
-    if (validateItem.required && (!hasObjItem(body, validateItem.name) || typeof body[validateItem.name] === "undefined")) {
-      return `Missing ${validateItem.name} field. Please make sure to submit all required fields: ${requiredFieldsStr.join(", ")}`;
+    const validateOutcome = validateIndivItem(body, validateItem, requiredFieldsStr, parentField);
+    if (typeof validateOutcome === "string") {
+      return validateOutcome;
     }
+  }
+  return undefined;
+};
 
-    switch (validateItem.type) {
-      case ValueType.Number: {
-        if (hasObjItem(body, validateItem.name)) {
-          const strToNum = parseInt(body[validateItem.name]);
+const validateArr = (arr: any[], validateItem: ValidateObjStruct): string | undefined => {
+  for (let ii = 0; ii < arr.length; ii++) {
+    let validateOutcome: string | undefined;
+    if (validateItem.arrayType && isArray(validateItem.arrayType)) {
+      validateOutcome = validateBodyObj(arr[ii], validateItem.arrayType as ValidateFieldArr, validateItem.name);
+    } else {
+      validateOutcome = validateIndivItem(arr, { ...validateItem.arrayType, name: ii.toString(10) } as ValidateObjStruct, undefined, validateItem.name);
+    }
+    if (typeof validateOutcome === "string") {
+      return validateOutcome;
+    }
+  }
+  return undefined;
+};
 
-          // Check if value is valid number
-          // Throw error if this is not a valid number
-          if (!isFinite(strToNum)) {
-            return `Invalid ${validateItem.name} value, please enter a number`;
-          }
+const validateIndivItem = (body: BodyObj, validateItem: ValidateObjStruct, requiredFieldsStr?: string[], parentField?: string): string | undefined => {
+  const parentStr = parentField ? ` in ${parentField}` : "";
+  const isArrayItem = !!new RegExp(/^(\d)+$/i).test(validateItem.name);
+  const keyName = isArrayItem
+    ? getOrdinalNumber(parseInt(validateItem.name) + 1)
+    : validateItem.name;
 
-          // Check if a value is more than or equal the minimum value
-          // Throw error if value < minimum value
-          if (validateItem.minNum && strToNum < validateItem.minNum) {
-            return `${validateItem.name} value too small, please enter a number >= ${validateItem.minNum}`;
-          }
+  // Missing field check
+  if (validateItem.required && (!hasObjItem(body, validateItem.name) || typeof body[validateItem.name] === "undefined")) {
+    return `Missing ${keyName} field${parentStr}. Please make sure to submit all required fields: ${requiredFieldsStr?.join(", ") ?? ""}`;
+  }
 
-          // Check if a value is less than or equal the maximum value
-          // Throw error if value > maximum value
-          if (validateItem.maxNum && strToNum > validateItem.maxNum) {
-            return `${validateItem.name} value too big, please enter a number <= ${validateItem.maxNum}`;
-          }
+  switch (validateItem.type) {
+    case ValueType.Number: {
+      if (hasObjItem(body, validateItem.name)) {
+        const strToNum = parseInt(body[validateItem.name]);
+
+        // Check if value is valid number
+        // Throw error if this is not a valid number
+        if (!isFinite(strToNum)) {
+          return `Invalid ${keyName} value${parentStr}, please enter a number`;
         }
-        continue;
-      }
-      case ValueType.Boolean: {
-        if (hasObjItem(body, validateItem.name) && typeof body[validateItem.name] !== "boolean") {
-          return `Invalid ${validateItem.name} value, please enter a boolean`;
-        }
-        continue;
-      }
-      case ValueType.Email: {
-        if (hasObjItem(body, validateItem.name) && !emailRegex.test(body[validateItem.name])) {
-          return `Invalid ${validateItem.name} value, please enter a valid email`;
-        }
-        continue;
-      }
-      case ValueType.String: {
-        if (hasObjItem(body, validateItem.name)) {
-          if (body[validateItem.name] === null || typeof body[validateItem.name] !== "string") {
-            return `Invalid ${validateItem.name} value, please enter a string`;
-          }
 
-          // Check if this string has the correct min length
-          // Throw error if this value's length < min length
-          if (validateItem.minLength && body[validateItem.name]?.length < validateItem.minLength) {
-            return `Invalid string length for ${validateItem.name} field. Please input a string with ${validateItem.minLength} or more characters`;
-          }
-
-          // Check if this string has the correct max length
-          // Throw error if this value's length > max length
-          if (validateItem.maxLength && body[validateItem.name]?.length > validateItem.maxLength) {
-            return `Invalid string length for ${validateItem.name} field. Please input a string with ${validateItem.maxLength} or fewer characters`;
-          }
+        // Check if a value is more than or equal the minimum value
+        // Throw error if value < minimum value
+        if (validateItem.minNum && strToNum < validateItem.minNum) {
+          return `${keyName} value${parentStr} too small, please enter a number >= ${validateItem.minNum}`;
         }
-        continue;
+
+        // Check if a value is less than or equal the maximum value
+        // Throw error if value > maximum value
+        if (validateItem.maxNum && strToNum > validateItem.maxNum) {
+          return `${keyName} value${parentStr} too big, please enter a number <= ${validateItem.maxNum}`;
+        }
       }
-      default: {
-        continue;
+      break;
+    }
+    case ValueType.Boolean: {
+      if (hasObjItem(body, validateItem.name) && typeof body[validateItem.name] !== "boolean") {
+        return `Invalid ${keyName} value${parentStr}, please enter a boolean`;
       }
+      break;
+    }
+    case ValueType.Email: {
+      if (hasObjItem(body, validateItem.name) && !emailRegex.test(body[validateItem.name])) {
+        return `Invalid ${keyName} value${parentStr}, please enter a valid email`;
+      }
+      break;
+    }
+    case ValueType.String: {
+      if (hasObjItem(body, validateItem.name)) {
+        if (body[validateItem.name] === null || typeof body[validateItem.name] !== "string") {
+          return `Invalid ${keyName} item${parentStr}, please enter a string`;
+        }
+
+        // Check if this string has the correct min length
+        // Throw error if this value's length < min length
+        if (validateItem.minLength && body[validateItem.name]?.length < validateItem.minLength) {
+          return `Invalid string length for ${keyName} field${parentStr}. Please input a string with ${validateItem.minLength} or more characters`;
+        }
+
+        // Check if this string has the correct max length
+        // Throw error if this value's length > max length
+        if (validateItem.maxLength && body[validateItem.name]?.length > validateItem.maxLength) {
+          return `Invalid string length for ${keyName} field${parentStr}. Please input a string with ${validateItem.maxLength} or fewer characters`;
+        }
+      }
+      break;
+    }
+    case ValueType.Array: {
+      if (hasObjItem(body, validateItem.name)) {
+        if (body[validateItem.name] === null || !isArray(body[validateItem.name])) {
+          const arrayTypes = validateItem.arrayType && isArray(validateItem.arrayType) ? "objects" : `${(validateItem.arrayType as ValidateObjStruct).type}s`;
+          return `Invalid ${keyName} value, please enter an array of ${arrayTypes}`;
+        }
+
+        // Check if this array has the correct min length
+        // Throw error if this value's length < min length
+        if (validateItem.minLength && body[validateItem.name]?.length < validateItem.minLength) {
+          return `Invalid array length for ${keyName} field. Please input an array with ${validateItem.minLength} or more items`;
+        }
+
+        // Check if this array has the correct max length
+        // Throw error if this value's length > max length
+        if (validateItem.maxLength && body[validateItem.name]?.length > validateItem.maxLength) {
+          return `Invalid array length for ${keyName} field. Please input an array with ${validateItem.maxLength} or fewer items`;
+        }
+
+        if (validateItem.arrayType) {
+          const validateOutcome = validateArr(body[validateItem.name], validateItem);
+          if (validateOutcome) return validateOutcome;
+        }
+      }
+      break;
+    }
+    default: {
+      break;
     }
   }
   return undefined;
