@@ -1,4 +1,4 @@
-import { ValidateFieldArr, ValueType, validateBodyObj } from '../src';
+import { ValidateFieldArr, ValueType, validateBodyObj } from "../src/validate";
 
 describe("Other tests", () => {
   const validateObj: ValidateFieldArr = [{

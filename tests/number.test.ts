@@ -1,4 +1,4 @@
-import { ValidateFieldArr, ValidateObjStruct, ValueType, validateBodyObj } from '../src';
+import { ValidateFieldArr, ValidateObjStruct, ValueType, validateBodyObj } from "../src/validate";
 
 const requiredNumField: ValidateObjStruct = {
   name: "age",

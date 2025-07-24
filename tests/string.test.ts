@@ -1,4 +1,4 @@
-import { ValidateFieldArr, ValidateObjStruct, ValueType, validateBodyObj } from '../src';
+import { ValidateFieldArr, ValidateObjStruct, ValueType, validateBodyObj } from "../src/validate";
 
 const requiredStrField: ValidateObjStruct = {
   name: "name",
@@ -26,6 +26,16 @@ const lengthAboveMinLength: ValidateObjStruct = {
   ...optionalStrField,
   minLength: 1,
 };
+
+const objFieldSchema: ValidateFieldArr = [{
+  ...requiredStrField,
+  minLength: 2,
+}, {
+  name: "description",
+  type: ValueType.String,
+  required: true,
+  minLength: 2,
+}];
 
 describe("String tests", () => {
   test("should return undefined for object with valid string field", () => {
@@ -55,13 +65,13 @@ describe("String tests", () => {
   test("should return error if required value is null", () => {
     const body = { name: null };
     const result = validateBodyObj(body, [requiredStrField]);
-    expect(result).toBe("Invalid name value, please enter a string");
+    expect(result).toBe("Invalid name item, please enter a string");
   });
 
   test("should return error if the value is invalid, i.e. not a string", () => {
     const body = { name: 24 };
     const result = validateBodyObj(body, [requiredStrField]);
-    expect(result).toBe("Invalid name value, please enter a string");
+    expect(result).toBe("Invalid name item, please enter a string");
   });
 
   test("should return undefined if the string length is within specified range, i.e. between minLength and maxLength", () => {
@@ -98,5 +108,14 @@ describe("String tests", () => {
     const body = { name: "" };
     const result = validateBodyObj(body, [lengthAboveMinLength]);
     expect(result).toBe(`Invalid string length for name field. Please input a string with ${lengthAboveMinLength.minLength} or more characters`);
+  });
+
+  test("should return the 1st error if there are multiple string errors", () => {
+    const body = {
+      name: "a",
+      description: "b",
+    };
+    const result = validateBodyObj(body, objFieldSchema);
+    expect(result).toBe("Invalid string length for name field. Please input a string with 2 or more characters");
   });
 });
