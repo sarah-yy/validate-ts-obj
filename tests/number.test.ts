@@ -33,6 +33,13 @@ const multipleInvalidFields: ValidateFieldArr = [requiredNumField, {
   required: true,
 }];
 
+const acceptedValuesSchema: ValidateObjStruct = {
+  name: "position",
+  type: ValueType.Number,
+  required: true,
+  acceptedValues: [1, 2, 3],
+};
+
 describe("Number tests", () => {
   test("should return undefined for object with valid number field", async () => {
     const body = { age: 30 };
@@ -119,5 +126,17 @@ describe("Number tests", () => {
     const body = { age: 51 };
     const result = validateBodyObj(body, []);
     expect(result).toBeUndefined();
+  });
+
+  test("should return undefined if the value is included in the list of accepted values", () => {
+    const body = { position: 1 };
+    const result = validateBodyObj(body, [acceptedValuesSchema]);
+    expect(result).toBeUndefined();
+  });
+
+  test("should return error if the value is not included in the list of accepted values", () => {
+    const body = { position: 5 };
+    const result = validateBodyObj(body, [acceptedValuesSchema]);
+    expect(result).toBe("Invalid position value, please enter only the following values: 1, 2, 3");
   });
 });

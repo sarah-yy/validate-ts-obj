@@ -25,16 +25,28 @@ export interface ValidateObjStruct {
   type: ValueTypeKey;
   required?: boolean;
 
-  // For strings and arrays only
+  /**
+   * To indicate minimum and maximum length of string/array
+   * For strings and arrays only
+   */
   minLength?: number;
   maxLength?: number;
 
-  // For numbers only
+  /**
+   * To indicate minimum and maximum required value
+   * For numbers only
+   */
   minNum?: number;
   maxNum?: number;
 
   // For arrays only
   arrayType?: ValidateFieldArr | ArrayItemStruct;
+
+  /**
+   * To indicate set of accepted values (acts like an enum)
+   * For strings and numbers only
+   */
+  acceptedValues?: string[] | number[];
 }
 
 export type ArrayItemStruct = Omit<ValidateObjStruct, "name">;
@@ -119,6 +131,12 @@ const validateIndivItem = (body: BodyObj, validateItem: ValidateObjStruct, requi
           return `Invalid ${keyName} value${parentStr}, please enter a number`;
         }
 
+        // Check if value is included in the list of accepted values
+        // Throw error if the value cannot be found in the list
+        if (validateItem.acceptedValues && !(validateItem.acceptedValues as number[]).includes(strToNum)) {
+          return `Invalid ${keyName} value${parentStr}, please enter only the following values: ${validateItem.acceptedValues.join(", ")}`;
+        }
+
         // Check if a value is more than or equal the minimum value
         // Throw error if value < minimum value
         if (validateItem.minNum && strToNum < validateItem.minNum) {
@@ -149,6 +167,12 @@ const validateIndivItem = (body: BodyObj, validateItem: ValidateObjStruct, requi
       if (hasObjItem(body, validateItem.name)) {
         if (body[validateItem.name] === null || typeof body[validateItem.name] !== "string") {
           return `Invalid ${keyName} item${parentStr}, please enter a string`;
+        }
+
+        // Check if value is included in the list of accepted values
+        // Throw error if the value cannot be found in the list
+        if (validateItem.acceptedValues && !(validateItem.acceptedValues as string[]).includes(body[validateItem.name])) {
+          return `Invalid ${keyName} value${parentStr}, please enter only the following values: ${validateItem.acceptedValues.join(", ")}`;
         }
 
         // Check if this string has the correct min length
