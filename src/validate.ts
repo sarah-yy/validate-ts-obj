@@ -1,6 +1,5 @@
+import { dateTimeRegex, emailRegex } from "./constants";
 import { getOrdinalNumber } from "./utils";
-
-const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/i;
 
 export interface ValueTypeObj {
   String: string;
@@ -8,6 +7,7 @@ export interface ValueTypeObj {
   Number: string;
   Boolean: string;
   Array: string;
+  DateTime: string;
 }
 
 export const ValueType: ValueTypeObj = {
@@ -16,6 +16,7 @@ export const ValueType: ValueTypeObj = {
   Number: "number",
   Boolean: "boolean",
   Array: "array",
+  DateTime: "datetime",
 };
 
 export type ValueTypeKey = typeof ValueType[keyof typeof ValueType];
@@ -121,6 +122,12 @@ const validateIndivItem = (body: BodyObj, validateItem: ValidateObjStruct, requi
   }
 
   switch (validateItem.type) {
+    case ValueType.DateTime: {
+      if (hasObjItem(body, validateItem.name) && !dateTimeRegex.test(body[validateItem.name])) {
+        return `Invalid ${keyName} value${parentStr}, please enter a date in ISO 8601 format, i.e. YYYY-MM-DDTHH:mm:ss.sssZ`;
+      }
+      break;
+    }
     case ValueType.Number: {
       if (hasObjItem(body, validateItem.name)) {
         const strToNum = parseInt(body[validateItem.name]);
